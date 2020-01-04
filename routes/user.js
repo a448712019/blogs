@@ -1,53 +1,35 @@
-var express = require('express');
-var router = express.Router();
+const router = require('koa-router')()
 const { login } = require('../controller/user')
 const { SuccessModal, ErrorModal } = require('../model/resModel')
 
-router.post('/login', function(req, res, next){
-    const { username, password } = req.body
-     console.log('username', username)
-     const result = login(username, password)
-     return result.then(data => {
-         if(data.username){
-             //操纵cookie
-             // res.setHeader('Set-Cookie', `username=${data.username}; path='/'; httpOnly; expires=${getCookieExpires()}`)
-             //设置session
-             req.session.username = data.username
-             req.session.realname = data.realname
-             console.log('req.session is', req.session)
-             res.json(
-                new SuccessModal()
-             )
-             return
-         }
-        res.json(
-        new ErrorModal('登录失败')
-        )
-     })
+router.prefix('/api/user')
+
+router.post('/login', async function (ctx, next) {
+    const { username, password } = ctx.request.body
+    const data = await login(username, password)
+    if(data.username){
+        //操纵cookie
+        // res.setHeader('Set-Cookie', `username=${data.username}; path='/'; httpOnly; expires=${getCookieExpires()}`)
+        //设置session
+        ctx.session.username = data.username
+        ctx.session.realname = data.realname
+        console.log('req.session is', ctx.session)
+        ctx.body = new SuccessModal()
+        return
+    }
+    ctx.body = new ErrorModal('登录失败')
 })
 
-// router.get('/login-test', (req, res, next) => {
-//     if(req.session.username){
-//         res.json({
-//             errno: 0,
-//             msg: '登录成功'
-//         })
-//         return
-//     }
-//     res.json({
-//         errno: -1,
-//         msg: '未登录'
-//     })
-// })
-// router.get('/session-test', (req, res, next) => {
-//     const session = req.session
-//     if(session.viewNum == null){
-//         session.viewNum = 0
-//     }
-//     session.viewNum++
-//     res.json({
-//         viewNum: session.viewNum
-//     })
-//     // console.log(req.session)
-// })
+
+router.get('/seesion-test', async (ctx, next) => {
+    if(ctx.session.viewCount == null){
+        ctx.session.viewCount = 0
+    }
+    ctx.session.viewCount++
+    ctx.body = {
+        errno: 0,
+        viewCount:ctx.session.viewCount
+    }
+})
+
 module.exports = router

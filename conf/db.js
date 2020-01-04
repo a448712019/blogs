@@ -1,5 +1,4 @@
 const env = process.env.NODE_ENV //环境变量
-
 //配置
 let MYSQL_CONF, REDIS_CONF
 
